@@ -1,0 +1,97 @@
+//Система авторизации
+<StackPanel VerticalAlignment="Center" 
+                    HorizontalAlignment="Center"
+                    Width="200"
+                    Height="100">
+	<TextBlock Text="Login"/>
+	<TextBox Name="TxLogib"/>
+	<TextBlock Text="Password"/>
+	<TextBox Name="TxPassword"/>
+	<Button Height="20"
+                    Margin="0"
+                    Content="Войти"
+                    Click="BtnSignIn_click"/>
+</StackPanel>
+
+//Фрейм для страниц
+Title="Name" Height="450" Width="800" MinHeight="200" MinWidth="200" ..для окна
+<Frame x:Name="ManeFrame" NavigationUIVisibility="Hidden"/>
+
+
+using name.Pagess;
+public MainWindow()
+{
+	InitializeComponent();
+	ManeFrame.Navigate(new SignlnPage());
+}
+
+//Открывание страниц по ролям через case
+	var CurrentUser = AppDate.db.Users.FirstOrDefault
+	   (u => u.Login == TxLogib.Text && u.Password == TxPassword.Text);
+	if(CurrentUser == null)
+	{
+		MessageBox.Show("Не верный пароль");
+	}
+	else
+	{
+		switch (CurrentUser.RoleId)
+		{
+			case 1: NavigationService.Navigate(new AdminPage());
+                        	break;
+                    	case 2: NavigationService.Navigate(new UserPage());
+                        	break;
+                }
+	}
+
+//Подключение к бд пример
+using name.Models;
+public static user23Entities db = new user23Entities();
+
+//Система регистрация
+..окно
+<StackPanel>
+	<TextBox x:Name="txtUsername" Margin="0,0,0,10" Padding="5" PlaceholderText="Логин"/>
+        <TextBox x:Name="txtPassword" Margin="0,0,0,10" Padding="5" PlaceholderText="Пароль"/>
+        <Button x:Name="btnRegister" Content="Зарегистрироваться" Click="btnRegister_Click"/>
+</StackPanel>
+..
+private void btnRegister_Click(object sender, RoutedEventArgs e)
+{
+        string login = txtLogin.Text;
+        string password = txtPassword.Password; // Используем PasswordBox!
+
+        if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
+        {
+            MessageBox.Show("Логин и пароль не могут быть пустыми!");
+            return;
+        }
+
+        // Проверка, есть ли пользователь
+        if (AppData.db.Users.Any(u => u.Login == login))
+        {
+            MessageBox.Show("Этот логин уже занят!");
+            return;
+        }
+
+        Users newUser = new Users()
+        {
+            Login = login,
+            Password = password //Лучше хешировать
+        };
+
+        try
+        {
+            // Добавляем в БД
+            AppData.db.Users.Add(newUser);
+            AppData.db.SaveChanges();
+            
+            MessageBox.Show("Регистрация успешна!");
+            this.Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Ошибка: {ex.Message}");
+        }
+}
+
+//Вывод данных
