@@ -1,0 +1,78 @@
+//Работа с базой данных
+<StackPanel>
+    <Button Content="Загрузить данные" Click="LoadData_Click" Margin="10" Width="120"/>
+    <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" Margin="10"/>
+</StackPanel>
+.......................................
+using System.Data.SQLite;
+using System.Data;
+
+private void LoadData_Click(object sender, RoutedEventArgs e)
+{
+    // Путь к БД (файл SQLite)
+    string dbPath = "YourDatabase.db";
+    string connectionString = $"Data Source={dbPath};Version=3;";
+
+    using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+    {
+        connection.Open();
+        string query = "SELECT * FROM Users"; // Ваша таблица
+        SQLiteCommand command = new SQLiteCommand(query, connection);
+        SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+        DataTable dataTable = new DataTable();
+        adapter.Fill(dataTable);
+        dataGrid.ItemsSource = dataTable.DefaultView; // Вывод в DataGrid
+    }
+}
+///////////////////////////////////////////
+
+//Добавление записи в БД через форму
+<StackPanel Width="200" Margin="10">
+    <TextBox x:Name="nameTextBox" PlaceholderText="Имя" Margin="5"/>
+    <TextBox x:Name="ageTextBox" PlaceholderText="Возраст" Margin="5"/>
+    <Button Content="Добавить" Click="AddData_Click" Margin="5"/>
+</StackPanel>
+............................................
+private void AddData_Click(object sender, RoutedEventArgs e)
+{
+    string name = nameTextBox.Text;
+    int age = int.Parse(ageTextBox.Text); // Проверку на число добавьте сами!
+
+    string query = "INSERT INTO Users (Name, Age) VALUES (@Name, @Age)";
+    
+    using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+    {
+        connection.Open();
+        SQLiteCommand command = new SQLiteCommand(query, connection);
+        command.Parameters.AddWithValue("@Name", name);
+        command.Parameters.AddWithValue("@Age", age);
+        command.ExecuteNonQuery();
+        MessageBox.Show("Данные добавлены!");
+    }
+}
+/////////////////////////////////////////////////
+
+//Поиск по БД и фильтрация XAML (поиск + вывод)
+<StackPanel>
+    <TextBox x:Name="searchTextBox" Margin="10" PlaceholderText="Поиск по имени"/>
+    <Button Content="Найти" Click="SearchData_Click" Margin="5" Width="80"/>
+    <DataGrid x:Name="searchDataGrid" Margin="10"/>
+</StackPanel>
+.................................................
+private void SearchData_Click(object sender, RoutedEventArgs e)
+{
+    string searchTerm = searchTextBox.Text;
+    string query = "SELECT * FROM Users WHERE Name LIKE @SearchTerm";
+    
+    using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+    {
+        SQLiteCommand command = new SQLiteCommand(query, connection);
+        command.Parameters.AddWithValue("@SearchTerm", $"%{searchTerm}%");
+        
+        SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+        DataTable dataTable = new DataTable();
+        adapter.Fill(dataTable);
+        searchDataGrid.ItemsSource = dataTable.DefaultView;
+    }
+}
+//////////////////////////////////////////////////

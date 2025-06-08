@@ -1,0 +1,137 @@
+//Простое окно с кнопкой и текстом
+<!-- MainWindow.xaml -->
+<Window x:Class="QuickWpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Quick WPF App" Height="200" Width="300">
+    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock x:Name="textBlock" Text="Нажмите кнопку!" Margin="10"/>
+        <Button x:Name="button" Content="Нажми меня" Width="100" Click="Button_Click"/>
+    </StackPanel>
+</Window>
+...........................................
+// MainWindow.xaml.cs
+private void Button_Click(object sender, RoutedEventArgs e)
+{
+    textBlock.Text = "Кнопка нажата!";
+}
+//////////////////////////////////////////////
+
+//Ввод текста и вывод
+<StackPanel VerticalAlignment="Center">
+    <TextBox x:Name="inputTextBox" Width="200" Margin="10"/>
+    <Button Content="Показать текст" Click="ShowText_Click" Width="100"/>
+    <TextBlock x:Name="outputTextBlock" Margin="10"/>
+</StackPanel>
+..................................................
+private void ShowText_Click(object sender, RoutedEventArgs e)
+{
+    outputTextBlock.Text = "Вы ввели: " + inputTextBox.Text;
+}
+///////////////////////////////////
+
+//Переключение между страницами
+<StackPanel>
+    <Button Content="Открыть Page 1" Click="GoToPage1_Click" Margin="5"/>
+    <Button Content="Открыть Page 2" Click="GoToPage2_Click" Margin="5"/>
+    <Frame x:Name="mainFrame" NavigationUIVisibility="Hidden"/>
+</StackPanel>
+.......................................................
+private void GoToPage1_Click(object sender, RoutedEventArgs e)
+{
+    mainFrame.Navigate(new Uri("Page1.xaml", UriKind.Relative));
+}
+
+private void GoToPage2_Click(object sender, RoutedEventArgs e)
+{
+    mainFrame.Navigate(new Uri("Page2.xaml", UriKind.Relative));
+}
+///////////////////////////////////////////
+
+//Список элементов
+<StackPanel>
+    <ListBox x:Name="itemsListBox" Height="150" Margin="10"/>
+    <Button Content="Добавить элемент" Click="AddItem_Click" Width="120"/>
+</StackPanel>
+....................................
+private void AddItem_Click(object sender, RoutedEventArgs e)
+{
+    itemsListBox.Items.Add("Элемент " + (itemsListBox.Items.Count + 1));
+}
+///////////////////////////////////////////////
+
+//Изменение цвета фона
+<StackPanel>
+    <TextBlock Text="Изменить цвет фона" Margin="10"/>
+    <Button Content="Красный" Background="Red" Click="ChangeColor_Click" Margin="5"/>
+    <Button Content="Зеленый" Background="Green" Click="ChangeColor_Click" Margin="5"/>
+</StackPanel>
+................................................
+private void ChangeColor_Click(object sender, RoutedEventArgs e)
+{
+    var button = (Button)sender;
+    this.Background = button.Background;
+}
+///////////////////////////////////////////////
+
+//Простой диалог (MessageBox)
+private void ShowDialog_Click(object sender, RoutedEventArgs e)
+{
+    MessageBox.Show("Это простой диалог!", "Внимание", MessageBoxButton.OK, MessageBoxImage.Information);
+}
+////////////////////////////////////////////////
+
+//Проверка ввода (валидация)
+<StackPanel>
+    <TextBox x:Name="ageTextBox" Margin="10" Width="100"/>
+    <Button Content="Проверить возраст" Click="CheckAge_Click"/>
+</StackPanel>
+............................................
+private void CheckAge_Click(object sender, RoutedEventArgs e)
+{
+    if (int.TryParse(ageTextBox.Text, out int age))
+    {
+        MessageBox.Show($"Возраст: {age}", "Успех");
+    }
+    else
+    {
+        MessageBox.Show("Введите число!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+}
+/////////////////////////////////////////////////////
+
+//Таймер (DispatcherTimer)
+<StackPanel>
+    <TextBlock x:Name="timerTextBlock" FontSize="20" Margin="10"/>
+    <Button Content="Старт" Click="StartTimer_Click" Width="80"/>
+</StackPanel>
+...................................................
+private DispatcherTimer timer;
+private int seconds = 0;
+
+private void StartTimer_Click(object sender, RoutedEventArgs e)
+{
+    timer = new DispatcherTimer();
+    timer.Interval = TimeSpan.FromSeconds(1);
+    timer.Tick += Timer_Tick;
+    timer.Start();
+}
+
+private void Timer_Tick(object sender, EventArgs e)
+{
+    seconds++;
+    timerTextBlock.Text = $"Прошло: {seconds} сек.";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -49,49 +49,199 @@ public static user23Entities db = new user23Entities();
 
 //Система регистрация
 ..окно
-<StackPanel>
-	<TextBox x:Name="txtUsername" Margin="0,0,0,10" Padding="5" PlaceholderText="Логин"/>
-        <TextBox x:Name="txtPassword" Margin="0,0,0,10" Padding="5" PlaceholderText="Пароль"/>
-        <Button x:Name="btnRegister" Content="Зарегистрироваться" Click="btnRegister_Click"/>
+<StackPanel Margin="20">
+            <TextBox x:Name="txtLogin" Margin="0,0,0,10" Padding="5" Text="Логин"/>
+
+            <TextBlock Text="Пароль"/>
+            <PasswordBox x:Name="txtPassword" Margin="0,0,0,10" Padding="5"/>
+
+            <TextBox x:Name="txtLName" Margin="0,0,0,10" Padding="5" Text="Фамилия"/>
+
+            <TextBox x:Name="txtFName" Margin="0,0,0,10" Padding="5" Text="Имя"/>
+
+
+            <TextBox x:Name="txtSName" Margin="0,0,0,10" Padding="5" Text="Отчество"/>
+
+            <Button x:Name="btnRegister" Content="Зарегистрироваться" Click="btnRegister_Click" Width="200"/>
+
+            <Button Content="Обратно" Click="btnClose" Width="200"/>
 </StackPanel>
+
 ..
 private void btnRegister_Click(object sender, RoutedEventArgs e)
+        {
+            // Получаем данные из формы
+            string login = txtLogin.Text;
+            string password = txtPassword.Password; // Используем PasswordBox
+            string lName = txtLName.Text;
+            string fName = txtFName.Text;
+            string sName = txtSName.Text;
+
+            // Проверка на пустые поля
+            if (string.IsNullOrWhiteSpace(login) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(lName) ||
+                string.IsNullOrWhiteSpace(fName))
+            {
+                MessageBox.Show("Заполните обязательные поля: Логин, Пароль, Фамилия, Имя!");
+                return;
+            }
+
+            // Проверка, не занят ли логин
+            if (AppDate.db.Users.Any(u => u.Login == login))
+            {
+                MessageBox.Show("Этот логин уже занят!");
+                return;
+            }
+
+            // Создаём нового пользователя
+            User newUser = new User()
+            {
+                Login = login,
+                Password = password,
+                LName = lName,
+                FName = fName,
+                MName = sName
+            };
+
+            try
+            {
+                // Добавляем в БД и сохраняем
+                AppDate.db.Users.Add(newUser);
+                AppDate.db.SaveChanges();
+
+                MessageBox.Show("Регистрация успешна!");
+                NavigationService.Navigate(new SignlnPage());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+            }
+        }
+private void btnClose(object sender, EventArgs e)
 {
-        string login = txtLogin.Text;
-        string password = txtPassword.Password; // Используем PasswordBox!
+        NavigationService.Navigate(new SignlnPage());
+}
 
-        if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
-        {
-            MessageBox.Show("Логин и пароль не могут быть пустыми!");
-            return;
-        }
 
-        // Проверка, есть ли пользователь
-        if (AppData.db.Users.Any(u => u.Login == login))
-        {
-            MessageBox.Show("Этот логин уже занят!");
-            return;
-        }
+//Вывод данных фамилии и имени для администратора // Загружаем данные из БД через Entity Framework
+<DataGrid x:Name="usersDataGrid" AutoGenerateColumns="False" Margin="10">
+	<DataGrid.Columns>
+        	<DataGridTextColumn Header="Фамилия" Binding="{Binding LName}" Width="120"/>
+        	<DataGridTextColumn Header="Имя" Binding="{Binding FName}" Width="100"/>
+        	<DataGridTextColumn Header="Отчество" Binding="{Binding SName}" Width="120"/>
+	</DataGrid.Columns>
+</DataGrid>
 
-        Users newUser = new Users()
-        {
-            Login = login,
-            Password = password //Лучше хешировать
-        };
+..
+public MainWindow()
+{
+        InitializeComponent();
+        LoadUsers();
+}
+private void LoadUsers()
+{
+        
+        var users = AppData.db.User.ToList();
+        usersDataGrid.ItemsSource = users;
+}
 
-        try
+//Отображение одного пользователя для показа
+<Grid Background="Tan" VerticalAlignment="Center" HorizontalAlignment="Center" Width="800" Height="450">
+        <StackPanel Margin="10" Width="150" Height="20" Orientation="Horizontal" VerticalAlignment="Top">
+            <TextBlock Text="{Binding FName}" FontWeight="Bold" Background="Red" Width="50" Height="20" />
+            <TextBlock Text="{Binding MName}" Background="Green" Width="50" Height="20"/>
+            <TextBlock Text="{Binding LName}" Background="Aqua"  Width="50" Height="20"/>
+        </StackPanel>
+</Grid>
+
+..
+public partial class UserPage : Page
+    {
+        public string FName => SignlnPage.CurrentU.FName;
+        public string LName => SignlnPage.CurrentU.LName;
+        public string SName => SignlnPage.CurrentU.MName;
+        public string Login => SignlnPage.CurrentU.Login;
+        public UserPage()
         {
-            // Добавляем в БД
-            AppData.db.Users.Add(newUser);
-            AppData.db.SaveChanges();
-            
-            MessageBox.Show("Регистрация успешна!");
-            this.Close();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Ошибка: {ex.Message}");
+            InitializeComponent();
+            this.DataContext = this;
         }
 }
 
-//Вывод данных
+
+// Установка контекста данных (например, для текущего пользователя)
+var currentUser = AppData.db.User.FirstOrDefault(u => u.Id == userId);
+this.DataContext = currentUser;
+
+
+//Для сохранения данных для дальнейшей работы с данными
+public SignlnPage()
+        {
+            InitializeComponent();
+
+        }
+        public static class CurrentU
+        {
+            public static int Id { get; set; }
+            public static string Login { get; set; }
+        }
+
+        private void BtnSignIn_click(object sender, RoutedEventArgs e)
+        {
+            var CurrentUser = AppDate.db.Users.FirstOrDefault
+                (u => u.Login == TxLogin.Text && u.Password == TxPassword.Text);
+            if(CurrentUser == null)
+            {
+                MessageBox.Show("Не верный пароль");
+                return;
+            }
+            CurrentU.Id = CurrentUser.id;
+            CurrentU.Login = TxLogin.Text;
+            switch (CurrentUser.RoleId)
+            {
+                case 1: NavigationService.Navigate(new AdminPage());
+                    break;
+                case 2: NavigationService.Navigate(new UserPage());
+                    break;
+                default: MessageBox.Show("Неизвестная роль пользователя");
+                    break;
+            }
+            
+}
+
+
+//Для пренимания значения пример
+public partial class UserPage : Page
+{
+    public UserPage()
+    {
+        InitializeComponent();
+        LoadUserData();
+    }
+
+    private void LoadUserData()
+    {
+        // Получаем данные текущего пользователя из БД
+        var user = AppData.db.User.FirstOrDefault(u => u.Id == CurrentUser.Id);
+        
+        if (user != null)
+        {
+            // Устанавливаем контекст данных (для привязки в XAML)
+            this.DataContext = user;
+        }
+    }
+}
+
+// В SignIn после успешной авторизации:
+var userWindow = new UserWindow(CurrentUser.Id);
+userWindow.Show();
+this.Close();
+
+// В UserWindow принимаем параметр:
+public UserWindow(int userId)
+{
+    InitializeComponent();
+    var user = AppData.db.User.FirstOrDefault(u => u.Id == userId);
+    this.DataContext = user;
+}
